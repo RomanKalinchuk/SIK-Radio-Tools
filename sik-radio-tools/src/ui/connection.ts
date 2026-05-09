@@ -31,14 +31,14 @@ export function renderConnectionBar(
       <select id="baud-rate" ${state.connectionState === 'connected' ? 'disabled' : ''}>
         ${BAUD_OPTIONS.map((b) => `<option value="${b}" ${b === state.baudRate ? 'selected' : ''}>${b} baud</option>`).join('')}
       </select>
-      <label class="connection-option">
-        <input type="checkbox" id="show-all-devices" ${state.showAllDevices ? 'checked' : ''} ${state.connectionState === 'connected' ? 'disabled' : ''}>
-        Show all devices
-      </label>
       ${state.connectionState === 'connected'
         ? `<button class="btn btn-danger" id="btn-disconnect">Disconnect</button>`
         : `<button class="btn btn-primary" id="btn-connect">Connect Radio</button>`
       }
+      <label class="connection-option">
+        <input type="checkbox" id="show-all-devices" ${state.showAllDevices ? 'checked' : ''} ${state.connectionState === 'connected' ? 'disabled' : ''}>
+        Show all devices
+      </label>
     </div>
   `;
 
