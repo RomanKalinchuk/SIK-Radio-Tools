@@ -29,13 +29,15 @@ describe('SerialTransport', () => {
     }
   });
 
-  it('opens the serial chooser without default filters', async () => {
+  it('opens the serial chooser with common USB serial adapter filters by default', async () => {
     const requestPort = vi.fn().mockResolvedValue(mockPort);
     installSerialMock(requestPort);
 
     await new SerialTransport().requestPort();
 
-    expect(requestPort).toHaveBeenCalledWith();
+    expect(requestPort).toHaveBeenCalledWith({
+      filters: SerialTransport.USB_SERIAL_FILTERS,
+    });
   });
 
   it('passes explicit filters when a caller supplies them', async () => {
@@ -46,5 +48,14 @@ describe('SerialTransport', () => {
     await new SerialTransport().requestPort({ filters });
 
     expect(requestPort).toHaveBeenCalledWith({ filters });
+  });
+
+  it('opens the serial chooser without filters when a caller supplies an empty filter list', async () => {
+    const requestPort = vi.fn().mockResolvedValue(mockPort);
+    installSerialMock(requestPort);
+
+    await new SerialTransport().requestPort({ filters: [] });
+
+    expect(requestPort).toHaveBeenCalledWith();
   });
 });

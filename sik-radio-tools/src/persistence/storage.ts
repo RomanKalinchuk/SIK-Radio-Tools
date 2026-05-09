@@ -12,6 +12,7 @@ const KEYS = {
 const DEFAULT_SETTINGS: AppSettings = {
   baudRate: 57600,
   darkMode: true,
+  showAllDevices: false,
 };
 
 function readLocalStorageJson<T>(key: string, fallback: T): T {

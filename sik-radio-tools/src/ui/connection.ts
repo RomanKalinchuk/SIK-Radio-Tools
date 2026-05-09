@@ -31,6 +31,10 @@ export function renderConnectionBar(
       <select id="baud-rate" ${state.connectionState === 'connected' ? 'disabled' : ''}>
         ${BAUD_OPTIONS.map((b) => `<option value="${b}" ${b === state.baudRate ? 'selected' : ''}>${b} baud</option>`).join('')}
       </select>
+      <label class="connection-option">
+        <input type="checkbox" id="show-all-devices" ${state.showAllDevices ? 'checked' : ''} ${state.connectionState === 'connected' ? 'disabled' : ''}>
+        Show all devices
+      </label>
       ${state.connectionState === 'connected'
         ? `<button class="btn btn-danger" id="btn-disconnect">Disconnect</button>`
         : `<button class="btn btn-primary" id="btn-connect">Connect Radio</button>`
@@ -41,11 +45,18 @@ export function renderConnectionBar(
   const btnConnect = document.getElementById('btn-connect');
   const btnDisconnect = document.getElementById('btn-disconnect');
   const baudSelect = document.getElementById('baud-rate') as HTMLSelectElement;
+  const showAllDevicesInput = document.getElementById('show-all-devices') as HTMLInputElement | null;
 
   baudSelect?.addEventListener('change', () => {
     const baud = parseInt(baudSelect.value, 10);
     setState({ baudRate: baud });
     saveSettings({ baudRate: baud });
+  });
+
+  showAllDevicesInput?.addEventListener('change', () => {
+    const showAllDevices = showAllDevicesInput.checked;
+    setState({ showAllDevices });
+    saveSettings({ showAllDevices });
   });
 
   btnConnect?.addEventListener('click', async () => {
@@ -77,7 +88,7 @@ async function handleConnect(state: AppState, setState: (p: Partial<AppState>) =
     if (state.demoMode) {
       await transport.open({ baudRate: state.baudRate });
     } else {
-      await transport.requestPort();
+      await transport.requestPort(state.showAllDevices ? { filters: [] } : undefined);
       await transport.open({ baudRate: state.baudRate });
     }
 

@@ -21,6 +21,7 @@ let state: AppState = {
   sikClient: null,
   baudRate: 57600,
   darkMode: true,
+  showAllDevices: false,
   demoMode: false,
   activeTab: 'settings',
   currentParams: {},
@@ -163,7 +164,7 @@ let appRoot: HTMLElement | null = null;
 export function renderApp(root: HTMLElement): void {
   appRoot = root;
   getSettings().then((s) => {
-    setState({ baudRate: s.baudRate, darkMode: s.darkMode });
+    setState({ baudRate: s.baudRate, darkMode: s.darkMode, showAllDevices: s.showAllDevices });
     render();
   });
 }

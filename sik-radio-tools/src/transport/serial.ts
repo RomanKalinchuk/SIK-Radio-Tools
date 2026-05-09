@@ -17,9 +17,17 @@ export class SerialTransport implements Transport {
   private lineBuffer: LineBuffer;
   private _isConnected = false;
 
-  /** Common SiK radio USB IDs. Do not use as the default chooser filter. */
+  /** Common SiK radio USB IDs. */
   static readonly SIK_FILTERS: SerialPortFilter[] = [
     { usbVendorId: 0x0403, usbProductId: 0x6015 },
+  ];
+
+  /** Common USB-to-serial chips used by SiK radios and adapter cables. */
+  static readonly USB_SERIAL_FILTERS: SerialPortFilter[] = [
+    { usbVendorId: 0x0403 }, // FTDI
+    { usbVendorId: 0x10c4 }, // Silicon Labs CP210x
+    { usbVendorId: 0x1a86 }, // WCH CH340/CH341
+    { usbVendorId: 0x067b }, // Prolific PL2303
   ];
 
   constructor() {
@@ -69,7 +77,7 @@ export class SerialTransport implements Transport {
     if (!navigator.serial) {
       throw new Error('Web Serial API is not available. Use Chrome 89+ on desktop.');
     }
-    const filters = options?.filters;
+    const filters = options?.filters ?? SerialTransport.USB_SERIAL_FILTERS;
     this.port = filters && filters.length > 0
       ? await navigator.serial.requestPort({ filters })
       : await navigator.serial.requestPort();

@@ -14,6 +14,7 @@ export interface PortInfo {
 export interface AppSettings {
   baudRate: number;
   darkMode: boolean;
+  showAllDevices: boolean;
   lastConnectedPort?: string;
 }
 
@@ -26,6 +27,7 @@ export interface AppState {
   sikClient: unknown;
   baudRate: number;
   darkMode: boolean;
+  showAllDevices: boolean;
   demoMode: boolean;
   activeTab: string;
   currentParams: Record<string, number | string>;
