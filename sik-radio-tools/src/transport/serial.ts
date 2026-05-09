@@ -17,7 +17,7 @@ export class SerialTransport implements Transport {
   private lineBuffer: LineBuffer;
   private _isConnected = false;
 
-  /** Known SiK radio USB IDs (FTDI-based: Holybro, 3DR, etc.) */
+  /** Common SiK radio USB IDs. Do not use as the default chooser filter. */
   static readonly SIK_FILTERS: SerialPortFilter[] = [
     { usbVendorId: 0x0403, usbProductId: 0x6015 },
   ];
@@ -69,8 +69,10 @@ export class SerialTransport implements Transport {
     if (!navigator.serial) {
       throw new Error('Web Serial API is not available. Use Chrome 89+ on desktop.');
     }
-    const filters = options?.filters ?? SerialTransport.SIK_FILTERS;
-    this.port = await navigator.serial.requestPort({ filters });
+    const filters = options?.filters;
+    this.port = filters && filters.length > 0
+      ? await navigator.serial.requestPort({ filters })
+      : await navigator.serial.requestPort();
   }
 
   async reconnectKnownPort(): Promise<boolean> {
