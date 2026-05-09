@@ -156,10 +156,16 @@ function bindSettingsActions(container: HTMLElement, _state: AppState): void {
         const reg = keyToRegister(def.key);
         const val = localParams[def.key];
         if (reg && val !== undefined) {
-          await client.writeParameter(reg, val);
+          const wrote = await client.writeParameter(reg, val);
+          if (!wrote) {
+            throw new Error(`Radio rejected ${def.label} (${reg})`);
+          }
         }
       }
-      await client.saveParameters();
+      const saved = await client.saveParameters();
+      if (!saved) {
+        throw new Error('Radio rejected save command (AT&W)');
+      }
       await client.reboot();
       saveBtn.textContent = 'Save to Radio';
       showToast('success', 'Saved to radio. Rebooting...');
@@ -201,7 +207,7 @@ function bindSettingsActions(container: HTMLElement, _state: AppState): void {
         const text = await file.text();
         const data = JSON.parse(text);
         if (data.params) {
-          localParams = sanitizeParams(data.params);
+          localParams = { ...getDefaultParams(), ...sanitizeParams(data.params) };
           setCurrentParams(localParams);
           renderParamGrid(container.querySelector<HTMLElement>('#param-grid')!);
           (container.querySelector('#btn-save') as HTMLButtonElement).disabled = false;
@@ -229,10 +235,16 @@ function bindSettingsActions(container: HTMLElement, _state: AppState): void {
         const reg = keyToRegister(def.key);
         const val = localParams[def.key];
         if (reg && val !== undefined) {
-          await client.sendAT(`RT${reg}=${val}`);
+          const result = await client.sendAT(`RT${reg}=${val}`);
+          if (!result.ok) {
+            throw new Error(`Remote radio rejected ${def.label} (${reg})`);
+          }
         }
       }
-      await client.sendAT('RT&W');
+      const saved = await client.sendAT('RT&W');
+      if (!saved.ok) {
+        throw new Error('Remote radio rejected save command (RT&W)');
+      }
       await client.exitCommandMode();
       showToast('success', 'Cloned to remote radio');
     } catch (err) {

@@ -137,8 +137,10 @@ function bindFirmwareActions(container: HTMLElement, state: AppState): void {
       boot = new BootloaderClient(transport, appendLog);
 
       setProgress({ phase: 'sync', completed: 0, total: selectedFirmware.totalBytes });
+      sik.suspendTransportCallbacks();
       let synced = await boot.sync();
       if (!synced) {
+        sik.resumeTransportCallbacks();
         appendLog('No bootloader sync; trying AT&UPDATE...');
         const inCmd = await sik.enterCommandMode().catch(() => false);
         if (!inCmd) {
@@ -146,6 +148,7 @@ function bindFirmwareActions(container: HTMLElement, state: AppState): void {
         }
         await transport.write('AT&UPDATE\r\n');
         await new Promise((r) => setTimeout(r, 900));
+        sik.suspendTransportCallbacks();
         synced = await boot.sync();
       }
       if (!synced) {
@@ -164,9 +167,9 @@ function bindFirmwareActions(container: HTMLElement, state: AppState): void {
       appendLog(`Flash failed: ${err instanceof Error ? err.message : String(err)}`);
     } finally {
       boot?.dispose();
+      sik.resumeTransportCallbacks();
       flashBtn.disabled = false;
       flashBtn.textContent = 'Flash Firmware';
     }
   });
 }
-

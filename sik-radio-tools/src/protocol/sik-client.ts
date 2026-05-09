@@ -32,6 +32,15 @@ export class SiKRadioClient {
     this.callbacks = cb;
   }
 
+  suspendTransportCallbacks(): void {
+    this.transport.setCallbacks({});
+    this.pendingLines = [];
+  }
+
+  resumeTransportCallbacks(): void {
+    this.setupTransport();
+  }
+
   private setupTransport(): void {
     this.transport.setCallbacks({
       onData: () => {
@@ -56,9 +65,15 @@ export class SiKRadioClient {
     }
   }
 
-  private async waitForResponse(): Promise<ATParseResult> {
-    return new Promise((resolve, reject) => {
-      const resolver = (result: ATParseResult): void => {
+  private queueResponse(): {
+    promise: Promise<ATParseResult>;
+    cancel: () => void;
+  } {
+    let timeout!: ReturnType<typeof setTimeout>;
+    let resolver!: (result: ATParseResult) => void;
+
+    const promise = new Promise<ATParseResult>((resolve, reject) => {
+      resolver = (result: ATParseResult): void => {
         clearTimeout(timeout);
         resolve(result);
       };
@@ -73,6 +88,17 @@ export class SiKRadioClient {
 
       this.responseQueue.push(resolver);
     });
+
+    return {
+      promise,
+      cancel: () => {
+        clearTimeout(timeout);
+        const idx = this.responseQueue.indexOf(resolver);
+        if (idx !== -1) {
+          this.responseQueue.splice(idx, 1);
+        }
+      },
+    };
   }
 
   /** Wait until 1.5s of no incoming data and 1.5s since our last send so the radio will recognize +++. */
@@ -128,9 +154,15 @@ export class SiKRadioClient {
   async enterCommandMode(): Promise<boolean> {
     await this.ensurePassthrough();
     await this.ensureGuardTime();
-    await this.transport.write('+++');
-    this.lastActivity = Date.now();
-    const result = await this.waitForResponse();
+    const waiter = this.queueResponse();
+    try {
+      await this.transport.write('+++');
+      this.lastActivity = Date.now();
+    } catch (err) {
+      waiter.cancel();
+      throw err;
+    }
+    const result = await waiter.promise;
     this.inCommandMode = result.ok;
     return result.ok;
   }
@@ -145,8 +177,14 @@ export class SiKRadioClient {
     this.pendingLines = [];
     const fullCmd = cmd.startsWith('AT') ? cmd : `AT${cmd}`;
     this.callbacks.onLog?.(`TX: ${fullCmd}`);
-    await this.transport.write(fullCmd + '\r\n');
-    return this.waitForResponse();
+    const waiter = this.queueResponse();
+    try {
+      await this.transport.write(fullCmd + '\r\n');
+    } catch (err) {
+      waiter.cancel();
+      throw err;
+    }
+    return waiter.promise;
   }
 
   async getVersion(): Promise<string> {

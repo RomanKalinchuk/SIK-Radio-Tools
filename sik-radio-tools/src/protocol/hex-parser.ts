@@ -14,6 +14,9 @@ export interface ParsedFirmware {
 }
 
 function parseHexByte(hex: string): number {
+  if (!/^[0-9a-fA-F]{2}$/.test(hex)) {
+    throw new Error(`Invalid HEX byte: ${hex}`);
+  }
   return parseInt(hex, 16);
 }
 
@@ -36,6 +39,14 @@ export function parseIntelHex(content: string): ParsedFirmware {
     }
 
     const count = bytes[0];
+    if (bytes.length !== count + 5) {
+      throw new Error(`Invalid HEX byte count: ${line}`);
+    }
+    const checksumOk = bytes.reduce((sum, b) => sum + b, 0) % 256 === 0;
+    if (!checksumOk) {
+      throw new Error(`Invalid HEX checksum: ${line}`);
+    }
+
     const addr = (bytes[1] << 8) | bytes[2];
     const type = bytes[3];
     const data = bytes.slice(4, 4 + count);
@@ -86,4 +97,3 @@ export function parseIntelHex(content: string): ParsedFirmware {
   }
   return { segments, usesBanking, totalBytes };
 }
-

@@ -12,7 +12,7 @@ import {
   importProfileFromJSON,
 } from '../persistence/profiles.js';
 import { getDefaultParams } from '../params/mapper.js';
-import { getCurrentParams } from './app.js';
+import { getCurrentParams, setState } from './app.js';
 import { showToast } from './toast.js';
 
 export function renderProfilesTab(container: HTMLElement, _state: AppState): void {
@@ -38,6 +38,14 @@ export function renderProfilesTab(container: HTMLElement, _state: AppState): voi
     { name: '433MHz EU', params: { ...getDefaultParams(), MIN_FREQ: 414000, MAX_FREQ: 454000 } },
   ];
 
+  const applyProfileParams = (params: Record<string, number | string>, message: string): void => {
+    setState({
+      activeTab: 'settings',
+      currentParams: { ...getDefaultParams(), ...params },
+    });
+    showToast('success', message);
+  };
+
   const exampleEl = document.getElementById('example-profiles')!;
   exampleEl.innerHTML = exampleProfiles
     .map(
@@ -52,7 +60,9 @@ export function renderProfilesTab(container: HTMLElement, _state: AppState): voi
 
   exampleEl.querySelectorAll('[data-load-example]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      showToast('info', 'Import this profile in Profiles tab, then load in Settings');
+      const raw = (btn as HTMLElement).dataset.loadExample;
+      if (!raw) return;
+      applyProfileParams(JSON.parse(raw), 'Example profile loaded');
     });
   });
 
@@ -79,8 +89,7 @@ export function renderProfilesTab(container: HTMLElement, _state: AppState): voi
       btn.addEventListener('click', async () => {
         const params = await loadProfile((btn as HTMLElement).dataset.load!);
         if (params) {
-          showToast('success', 'Profile loaded. Apply in Settings tab.');
-          // Could use a custom event to pass params to settings
+          applyProfileParams(params, 'Profile loaded');
         }
       });
     });
