@@ -77,10 +77,7 @@ async function handleConnect(state: AppState, setState: (p: Partial<AppState>) =
     if (state.demoMode) {
       await transport.open({ baudRate: state.baudRate });
     } else {
-      const hadPort = await transport.reconnectKnownPort();
-      if (!hadPort) {
-        await transport.requestPort();
-      }
+      await transport.requestPort();
       await transport.open({ baudRate: state.baudRate });
     }
 
