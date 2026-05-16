@@ -68,13 +68,3 @@ export function parseATResponse(lines: string[]): ATParseResult {
   return result;
 }
 
-/** Parse a single ATSn? response: "57" or "value" */
-export function parseATSResponse(lines: string[]): string | number | null {
-  for (const line of lines) {
-    const t = line.trim();
-    if (isOK(t) || isError(t)) continue;
-    const num = parseInt(t, 10);
-    return isNaN(num) ? t : num;
-  }
-  return null;
-}
