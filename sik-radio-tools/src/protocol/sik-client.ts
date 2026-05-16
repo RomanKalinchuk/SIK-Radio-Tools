@@ -131,6 +131,7 @@ export class SiKRadioClient {
 
   /** If radio is in command mode, exit to passthrough (ATO). Then +++ will be recognized. */
   private async ensurePassthrough(): Promise<void> {
+    if (!this.inCommandMode) return;
     this.pendingLines = [];
     let resolveExit!: (r: ATParseResult) => void;
     const exitPromise = new Promise<ATParseResult>((r) => { resolveExit = r; });
