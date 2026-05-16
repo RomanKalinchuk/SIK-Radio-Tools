@@ -95,6 +95,11 @@ async function handleConnect(state: AppState, setState: (p: Partial<AppState>) =
     const sikClient = new SiKRadioClient(transport);
     sikClient.setCallbacks({
       onLog: (msg) => logInfo(msg, 'sik'),
+      onClose: () => {
+        setState({ connectionState: 'disconnected', transport: null, sikClient: null });
+        showToast('info', 'Radio disconnected');
+        logInfo('Radio disconnected', 'connection');
+      },
     });
 
     setState({

@@ -12,6 +12,7 @@ const CMD_TIMEOUT_MS = 5000;
 
 export interface SiKClientCallbacks {
   onLog?: (msg: string) => void;
+  onClose?: () => void;
 }
 
 export class SiKRadioClient {
@@ -47,6 +48,10 @@ export class SiKRadioClient {
         this.lastReceiveTime = Date.now();
       },
       onLine: (line) => this.handleLine(line),
+      onClose: () => {
+        this.inCommandMode = false;
+        this.callbacks.onClose?.();
+      },
     });
   }
 
