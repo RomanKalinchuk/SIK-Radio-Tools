@@ -23,7 +23,7 @@ export function renderAdvancedTab(container: HTMLElement, _state: AppState): voi
     <div class="card">
       <h2 class="card-title">Register Reference</h2>
       <div class="terminal-container" style="max-height: 300px; font-size: 12px;">
-        ${SIK_PARAM_SCHEMA.map((p) => `${p.register ?? ''}: ${p.key} - ${p.description}`).join('\n')}
+        ${SIK_PARAM_SCHEMA.map((p) => `<div class="terminal-line">${p.register ?? ''}: ${p.key} - ${p.description}</div>`).join('')}
       </div>
     </div>
     <div class="card">
