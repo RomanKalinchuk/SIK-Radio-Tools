@@ -89,8 +89,23 @@ export class SerialTransport implements Transport {
     if (!navigator.serial) return false;
     const ports = await navigator.serial.getPorts();
     if (ports.length === 0) return false;
-    this.port = ports[0];
-    return true;
+
+    const match = (filters: { usbVendorId: number; usbProductId?: number }[]): SerialPort | undefined =>
+      ports.find((p) => {
+        const info = p.getInfo?.();
+        return filters.some(
+          (f) =>
+            info?.usbVendorId === f.usbVendorId &&
+            (f.usbProductId === undefined || info?.usbProductId === f.usbProductId)
+        );
+      });
+
+    this.port =
+      match(SerialTransport.SIK_FILTERS) ??
+      match(SerialTransport.USB_SERIAL_FILTERS) ??
+      (ports.length === 1 ? ports[0] : null);
+
+    return this.port !== null;
   }
 
   async open(options: { baudRate: number }): Promise<void> {
