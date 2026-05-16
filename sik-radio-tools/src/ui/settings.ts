@@ -100,6 +100,7 @@ function bindSettingsActions(container: HTMLElement, _state: AppState): void {
     loadBtn.textContent = 'Loading...';
     try {
       let params: Record<string, string | number>;
+      let enteredCommandMode = false;
       try {
         showToast('info', 'Sending ATI5…');
         params = await client.readAllParameters();
@@ -107,8 +108,10 @@ function bindSettingsActions(container: HTMLElement, _state: AppState): void {
         showToast('info', 'Entering command mode, then ATI5…');
         const cmdOk = await client.enterCommandMode();
         if (!cmdOk) throw new Error('Failed to enter command mode');
+        enteredCommandMode = true;
         params = await client.readAllParameters();
-        await client.exitCommandMode().catch(() => {});
+      } finally {
+        if (enteredCommandMode) await client.exitCommandMode().catch(() => {});
       }
 
       const loaded = ati5ToParams(params);
