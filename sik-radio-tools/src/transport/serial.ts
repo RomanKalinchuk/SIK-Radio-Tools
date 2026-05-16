@@ -16,6 +16,8 @@ export class SerialTransport implements Transport {
   private dataListeners: Set<(data: Uint8Array) => void> = new Set();
   private lineBuffer: LineBuffer;
   private _isConnected = false;
+  private readonly encoder = new TextEncoder();
+  private readonly decoder = new TextDecoder();
 
   /** Common SiK radio USB IDs. */
   static readonly SIK_FILTERS: SerialPortFilter[] = [
@@ -134,7 +136,7 @@ export class SerialTransport implements Transport {
     const writer = (this.port as SerialPort).writable.getWriter();
     try {
       const bytes = typeof data === 'string'
-        ? new TextEncoder().encode(data)
+        ? this.encoder.encode(data)
         : data;
       await writer.write(bytes);
     } finally {
@@ -154,7 +156,7 @@ export class SerialTransport implements Transport {
         if (done) break;
         if (value && value.length > 0) {
           this.dataListeners.forEach((cb) => cb(value));
-          const text = new TextDecoder().decode(value);
+          const text = this.decoder.decode(value);
           this.callbacks.onData?.(text);
           this.lineBuffer.push(text);
         }
