@@ -14,7 +14,6 @@ sik-radio-tools/
 ├── package.json
 ├── tsconfig.json
 ├── vitest.config.ts
-├── README.md
 ├── DOCUMENTATION.md
 ├── scripts/
 │   ├── copy-assets.js
@@ -32,6 +31,7 @@ sik-radio-tools/
 │   │   ├── diagnostics.ts
 │   │   ├── profiles.ts
 │   │   ├── advanced.ts
+│   │   ├── firmware.ts
 │   │   └── toast.ts
 │   ├── transport/
 │   │   ├── types.ts
@@ -41,7 +41,9 @@ sik-radio-tools/
 │   ├── protocol/
 │   │   ├── line-buffer.ts
 │   │   ├── at-parser.ts
-│   │   └── sik-client.ts
+│   │   ├── sik-client.ts
+│   │   ├── bootloader-client.ts
+│   │   └── hex-parser.ts
 │   ├── params/
 │   │   ├── schema.ts
 │   │   └── mapper.ts
