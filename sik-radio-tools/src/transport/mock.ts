@@ -65,7 +65,6 @@ export class MockTransport implements Transport {
   async open(): Promise<void> {
     await this.simulateDelay();
     this._isConnected = true;
-    this.callbacks.onClose = this.callbacks.onClose;
   }
 
   async close(): Promise<void> {
