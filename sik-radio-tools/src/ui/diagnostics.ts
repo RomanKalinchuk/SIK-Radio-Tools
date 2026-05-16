@@ -27,10 +27,13 @@ export function renderDiagnosticsTab(container: HTMLElement, _state: AppState): 
 
   const refreshLog = (): void => {
     const entries = getEntries();
-    logEl.innerHTML = entries
-      .slice(-200)
-      .map((e) => `<div class="terminal-line">${formatEntry(e)}</div>`)
-      .join('');
+    logEl.innerHTML = '';
+    for (const e of entries.slice(-200)) {
+      const div = document.createElement('div');
+      div.className = 'terminal-line';
+      div.textContent = formatEntry(e);
+      logEl.appendChild(div);
+    }
     logEl.scrollTop = logEl.scrollHeight;
   };
 
