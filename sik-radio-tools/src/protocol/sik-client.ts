@@ -78,7 +78,7 @@ export class SiKRadioClient {
         resolve(result);
       };
 
-      const timeout = setTimeout(() => {
+      timeout = setTimeout(() => {
         const idx = this.responseQueue.indexOf(resolver);
         if (idx !== -1) {
           this.responseQueue.splice(idx, 1);
