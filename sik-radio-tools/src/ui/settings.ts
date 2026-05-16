@@ -149,9 +149,11 @@ function bindSettingsActions(container: HTMLElement, _state: AppState): void {
     const saveBtn = container.querySelector('#btn-save') as HTMLButtonElement;
     saveBtn.disabled = true;
     saveBtn.textContent = 'Saving...';
+    let enteredCommandMode = false;
     try {
       const ok = await client.enterCommandMode();
       if (!ok) throw new Error('Failed to enter command mode');
+      enteredCommandMode = true;
       for (const def of SIK_PARAM_SCHEMA) {
         const reg = keyToRegister(def.key);
         const val = localParams[def.key];
@@ -166,10 +168,12 @@ function bindSettingsActions(container: HTMLElement, _state: AppState): void {
       if (!saved) {
         throw new Error('Radio rejected save command (AT&W)');
       }
+      enteredCommandMode = false;
       await client.reboot();
       saveBtn.textContent = 'Save to Radio';
       showToast('success', 'Saved to radio. Rebooting...');
     } catch (err) {
+      if (enteredCommandMode) await client.exitCommandMode().catch(() => {});
       saveBtn.disabled = false;
       saveBtn.textContent = 'Save to Radio';
       showToast('error', err instanceof Error ? err.message : String(err));
@@ -245,10 +249,11 @@ function bindSettingsActions(container: HTMLElement, _state: AppState): void {
       if (!saved.ok) {
         throw new Error('Remote radio rejected save command (RT&W)');
       }
-      await client.exitCommandMode();
       showToast('success', 'Cloned to remote radio');
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : String(err));
+    } finally {
+      await client.exitCommandMode().catch(() => {});
     }
   });
 }

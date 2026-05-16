@@ -50,11 +50,12 @@ export function renderAdvancedTab(container: HTMLElement, _state: AppState): voi
       const ok = await client.enterCommandMode();
       if (!ok) throw new Error('Failed to enter command mode');
       const val = await client.readParameter(reg);
-      await client.exitCommandMode();
       valInput.value = String(val ?? '');
       showToast('success', `Read ${reg}=${val}`);
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : String(err));
+    } finally {
+      await client.exitCommandMode().catch(() => {});
     }
   });
 
@@ -75,10 +76,11 @@ export function renderAdvancedTab(container: HTMLElement, _state: AppState): voi
       if (!ok) throw new Error('Failed to enter command mode');
       await client.writeParameter(reg, val);
       await client.saveParameters();
-      await client.exitCommandMode();
       showToast('success', `Wrote ${reg}=${val}. Use ATZ to reboot.`);
     } catch (err) {
       showToast('error', err instanceof Error ? err.message : String(err));
+    } finally {
+      await client.exitCommandMode().catch(() => {});
     }
   });
 }
